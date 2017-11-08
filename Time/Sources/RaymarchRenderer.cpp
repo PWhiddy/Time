@@ -55,8 +55,8 @@ namespace rme
 		glViewport(0, 0, width, height);
 
 		// Load shaders
-		std::string vert = loadSource((char*)("shaders/pass.vert"));
-		std::string frag = loadSource((char*)("shaders/march.frag"));
+		std::string vert = loadSource((char*)("../../Time/Shaders/pass.vert"));
+		std::string frag = loadSource((char*)("../../Time/Shaders/march.frag"));
 		//std::printf("source: %s\n", vert.c_str());
 		const GLchar* vertexShaderSource = (const GLchar *)vert.c_str();
 		const GLchar* fragmentShaderSource = (const GLchar *)frag.c_str();
