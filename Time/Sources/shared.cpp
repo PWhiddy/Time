@@ -1,8 +1,8 @@
-#version 420 core
+#include <glm/glm.hpp>
 
 #define MAX_OBJECTS 20
 
-#define CONTAINER  0
+#define CONTAINER 0
 #define CAMERA 1
 #define PLAYER 2
 #define LIGHT 3
@@ -11,6 +11,8 @@
 #define BOX 6
 #define BOX_INTERIOR 7
 #define TORUS 8
+
+using namespace glm;
 
 //// Structs ////
 
@@ -47,9 +49,25 @@ struct Ray
 //	float totalDist;
 };
 
+struct AllUniforms
+{
+	float time;
+	vec2 resolution;
+	vec2 cameraRotation;
+	vec3 cameraPos;
+
+	int warpCount;
+	Object3D warpA;
+	Object3D warpB;
+
+	Object3D objects[MAX_OBJECTS];
+	int objectCount;
+};
+
 ////////////
 
 // Uniforms 
+/*
 
 out vec4 color;
 
@@ -64,6 +82,7 @@ uniform Object3D warpB;
 
 uniform Object3D objects[MAX_OBJECTS];
 uniform int objectCount;
+*/
 
 /////////
 
@@ -102,9 +121,9 @@ float sdRoundBox(vec3 p, vec3 b, float r)
   return min(max(d.x,max(d.y,d.z)),0.0) + length(max(d,0.0)) - r;
 }
 
-float sdBoxInterior( vec3 p, vec3 b )
+float sdBoxInterior( vec3 p, vec3 b, AllUniforms uni)
 {
-  p.y += 0.3*sin(0.1*p.x*p.z+time*2.0);
+  p.y += 0.3*sin(0.1*p.x*p.z+uni.time*2.0);
   vec3 d = abs(p) - b;
   return -(min(max(d.x,max(d.y,d.z)),0.0) + length(max(d,0.0)));
 }
@@ -126,7 +145,7 @@ float norm(float n)
 
 /// Ray Marching and Distance Fields ///
 
-float map(vec3 p, Object3D obj[MAX_OBJECTS], int objCount, inout int closestIndex, Object3D warpA, Object3D warpB, int warpCount)
+float map(vec3 p, AllUniforms uni)
 {
 	//return sdSphere( p - vec3(3.0, 3.0, 3.0), 1.5);
 	
@@ -144,7 +163,7 @@ float map(vec3 p, Object3D obj[MAX_OBJECTS], int objCount, inout int closestInde
 				}
 				break;
 			case BOX_INTERIOR:
-				altDist = sdBoxInterior( p - obj[i].position, obj[i].shape);
+				altDist = sdBoxInterior( p - obj[i].position, obj[i].shape, uni);
 				if (altDist < dist) {
 					dist = altDist;
 					closestIndex = i;
@@ -170,14 +189,14 @@ float map(vec3 p, Object3D obj[MAX_OBJECTS], int objCount, inout int closestInde
 //	*/
 }
 
-void intersect(inout Ray r, Object3D obj[MAX_OBJECTS], int objCount, inout int closestIndex, Object3D warpA, Object3D warpB, int warpCount)
+void intersect(inout Ray r, Object3D obj[MAX_OBJECTS], int objCount, inout int closestIndex, Object3D warpA, Object3D warpB, int warpCount, inout float t)
 {
     const float maxDist = 280.0;
     const float epsilon = 0.005;
     float totalD = 0.0;
 	for (int i=0; i < 96; i++)
     {
-		float minDist = map(r.position, obj, objCount, closestIndex, warpA, warpB, warpCount);
+		float minDist = map(r.position, obj, objCount, closestIndex, warpA, warpB, warpCount, t);
 		
 		// Warping from warpA and warpB
 		
@@ -203,7 +222,7 @@ void intersect(inout Ray r, Object3D obj[MAX_OBJECTS], int objCount, inout int c
 
 // from https://www.shadertoy.com/view/XtGGR3
 
-float calcAO( vec3 pos, vec3 nor, Object3D obj[MAX_OBJECTS], int objCount, inout int closestIndex, Object3D warpA, Object3D warpB, int warpCount)
+float calcAO( vec3 pos, vec3 nor, Object3D obj[MAX_OBJECTS], int objCount, inout int closestIndex, Object3D warpA, Object3D warpB, int warpCount, into)
 {
 	float occ = 0.0;
     float sca = 1.0;
