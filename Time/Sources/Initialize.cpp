@@ -26,7 +26,7 @@ int main()
 	sphere->position = glm::vec3(0.0, 2.0, 10.0);
 	scene->add(sphere);
 
-	rme::RaymarchRenderer *renderer = new rme::RaymarchRenderer(1200, 720);
+	rme::RaymarchRenderer *renderer = new rme::RaymarchRenderer(600, 400);
 	
 	int totalFrames = 0;
 	int lastFrame = 0;

@@ -184,8 +184,8 @@ void intersect(inout Ray r, Object3D obj[MAX_OBJECTS], int objCount, inout int c
 		if (warpCount > 1) {
 			vec3 diffA = r.position - warpA.position;
 			vec3 diffB = r.position - warpB.position;
-			float diffALength = length(diffA);
-			float diffBLength = length(diffB);
+			float diffALength = length(diffA)-0.5*warpA.radius;
+			float diffBLength = length(diffB)-0.5*warpB.radius;
 			minDist =  min(minDist, min(diffALength, diffBLength));
 			float forceA = 0.2 / (pow(diffALength,2.0));
 			float forceB = 0.2 / (pow(diffBLength,2.0));
